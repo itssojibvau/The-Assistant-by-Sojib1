@@ -1,14 +1,15 @@
 from aiogram import Bot, Dispatcher, types, executor
 
 API_TOKEN = '7759471885:AAFYcPoiPYm4Hoh4lUKgm7XQRUYdl_0olHA'
+ALLOWED_GROUP_ID = -4601307365  # ✅ Only this group can use the bot
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-# === Mention Handler for Inline Menu ===
+# === Mention trigger to show menu ===
 @dp.message_handler(lambda message: message.text and '@the_assistant_by_sojib_bot' in message.text.lower())
 async def menu(message: types.Message):
-    if message.chat.type in ['group', 'supergroup']:
+    if message.chat.type in ['group', 'supergroup'] and message.chat.id == ALLOWED_GROUP_ID:
         keyboard = types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(
             types.InlineKeyboardButton("1️⃣ 9Proxy", callback_data='9proxy'),
@@ -17,11 +18,18 @@ async def menu(message: types.Message):
             types.InlineKeyboardButton("4️⃣ Coinbase Link", callback_data='coinbase'),
         )
         await message.reply("🔘 *একটি অপশন বাছাই করুন:*", reply_markup=keyboard, parse_mode="Markdown")
+    else:
+        await message.reply("⛔ এই গ্রুপে এই bot অনুমোদিত নয়!", parse_mode="Markdown")
 
-# === Callback Handler for Button Actions ===
+# === Button click response ===
 @dp.callback_query_handler(lambda c: c.data)
 async def process_callback(callback_query: types.CallbackQuery):
     data = callback_query.data
+
+    if callback_query.message.chat.id != ALLOWED_GROUP_ID:
+        await bot.send_message(callback_query.message.chat.id, "⛔ এই গ্রুপে এই bot অনুমোদিত নয়!", parse_mode="Markdown")
+        await callback_query.answer()
+        return
 
     if data == '9proxy':
         text = (
@@ -51,10 +59,9 @@ async def process_callback(callback_query: types.CallbackQuery):
     else:
         text = "`❌ Unknown Option!`"
 
-    # ✅ Ensure reply goes to the same group chat
     await bot.send_message(callback_query.message.chat.id, text, parse_mode="Markdown")
     await callback_query.answer()
 
-# === Start Bot Polling ===
+# === Bot Start Polling ===
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
