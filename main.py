@@ -1,12 +1,12 @@
 from aiogram import Bot, Dispatcher, types, executor
 
 API_TOKEN = '7759471885:AAFYcPoiPYm4Hoh4lUKgm7XQRUYdl_0olHA'
-ALLOWED_GROUP_ID = -4601307365  # ✅ Only this group can use the bot
+ALLOWED_GROUP_ID = -4601307365  # ✅ Only allow this group
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-# === Mention trigger to show menu ===
+# === Mention Trigger ===
 @dp.message_handler(lambda message: message.text and '@the_assistant_by_sojib_bot' in message.text.lower())
 async def menu(message: types.Message):
     if message.chat.type in ['group', 'supergroup'] and message.chat.id == ALLOWED_GROUP_ID:
@@ -21,15 +21,15 @@ async def menu(message: types.Message):
     else:
         await message.reply("⛔ এই গ্রুপে এই bot অনুমোদিত নয়!", parse_mode="Markdown")
 
-# === Button click response ===
+# === Button Click Handler ===
 @dp.callback_query_handler(lambda c: c.data)
 async def process_callback(callback_query: types.CallbackQuery):
-    data = callback_query.data
-
     if callback_query.message.chat.id != ALLOWED_GROUP_ID:
         await bot.send_message(callback_query.message.chat.id, "⛔ এই গ্রুপে এই bot অনুমোদিত নয়!", parse_mode="Markdown")
         await callback_query.answer()
         return
+
+    data = callback_query.data
 
     if data == '9proxy':
         text = (
@@ -54,7 +54,7 @@ async def process_callback(callback_query: types.CallbackQuery):
     elif data == 'coinbase':
         text = (
             "*💰 Coinbase Link:*\n"
-            "Link 1: https://trl.cldtraflink.com/click?pid=3601&offer_id=2446"
+            "Link 1: `https://trl.cldtraflink.com/click?pid=3601&offer_id=2446`"
         )
     else:
         text = "`❌ Unknown Option!`"
@@ -62,6 +62,6 @@ async def process_callback(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.message.chat.id, text, parse_mode="Markdown")
     await callback_query.answer()
 
-# === Bot Start Polling ===
+# === Start Bot ===
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
