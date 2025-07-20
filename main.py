@@ -1,12 +1,14 @@
+import os
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types, executor
 
-API_TOKEN = '7759471885:AAFYcPoiPYm4Hoh4lUKgm7XQRUYdl_0olHA'
-ALLOWED_GROUP_ID = -4601307365  # ✅ Only allow this group
+load_dotenv()
+API_TOKEN = os.getenv("BOT_TOKEN")  # ✅ Token secured via .env
+ALLOWED_GROUP_ID = -4601307365  # ✅ Only Work 2 group can use
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-# === Mention Trigger ===
 @dp.message_handler(lambda message: message.text and '@the_assistant_by_sojib_bot' in message.text.lower())
 async def menu(message: types.Message):
     if message.chat.type in ['group', 'supergroup'] and message.chat.id == ALLOWED_GROUP_ID:
@@ -21,7 +23,6 @@ async def menu(message: types.Message):
     else:
         await message.reply("⛔ এই গ্রুপে এই bot অনুমোদিত নয়!", parse_mode="Markdown")
 
-# === Button Click Handler ===
 @dp.callback_query_handler(lambda c: c.data)
 async def process_callback(callback_query: types.CallbackQuery):
     if callback_query.message.chat.id != ALLOWED_GROUP_ID:
@@ -62,6 +63,5 @@ async def process_callback(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.message.chat.id, text, parse_mode="Markdown")
     await callback_query.answer()
 
-# === Start Bot ===
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
